@@ -38,7 +38,7 @@ tibble(
   `Function` = c("plane_diff()","plane_cover()","plane_taper()","plane_repeat()","plane_trend()", "plane_shape()", "plane_zero()"),
   `Forecast` = c("YES","YES","YES","YES","YES", "YES", "YES"),
   `Observed` = c("YES","NO","NO","YES","NO", "NO", "YES"),
-  `Parameters` = c("None","None","None","Tolerated number of repeats; Number of observations to prepend","Significance level for trend change", "None", "None")
+  `Parameters` = c("None","None","None","Tolerated number of repeats; Number of observations to prepend","Significance level for trend change", "Method used to identify unique shapes (sdiff or dtw)", "None")
 ) %>%
   knitr::kable()
 ```
@@ -801,6 +801,8 @@ ggplot(data = trend_dat, mapping = aes(x = date, y = flu.admits)) +
 
 The shape component evaluates the shape of the trajectory of the forecast signal and compares that shape to existing shapes in the observed seed data. If the shape is identified as novel, a flag is raised, and the signal is considered implausible. 
 
+This component has one additional argument that defines the method used to identify shapes - one of "sdiff" (default) or "dtw." Based on preliminary analyses, the DTW method has a higher sensitivity and a slightly lower specificity than the "sdiff" method but is much more computationally expensive.
+
 For more information on the shape algorithm, see `?plane_shape()`.
 
 ### Flagged as implausible
@@ -917,8 +919,6 @@ shape_dat %>%
   ylab("Flu hospitalizations") +
   ggtitle("Shape component\nNot Flagged")
 ```
-
-
 
 
 ## Zero - `plane_zero()`

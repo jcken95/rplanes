@@ -426,7 +426,10 @@ plane_repeat <- function(location, input, seed, tolerance = NULL, prepend = NULL
 #' plane_score(input = prepped_forecast, seed = prepped_seed, components = c("cover","taper"))
 #'
 #' ## run plane scoring with all components and additional args
-#' comp_args <- list("trend" = list("sig_lvl" = 0.05), "repeat" = list("prepend" = 4, "tolerance" = 8))
+#' trend_args <- list("sig_lvl" = 0.05)
+#' repeat_args <- list("prepend" = 4, "tolerance" = 8)
+#' shape_args <- list("method" = "dtw")
+#' comp_args <- list("trend" = trend_args, "repeat" = repeat_args, "shape" = shape_args)
 #' plane_score(input = prepped_forecast, seed = prepped_seed, args = comp_args)
 #'
 #' ## run plane scoring with specific components and weights
@@ -748,7 +751,7 @@ plane_trend <- function(location, input, seed, sig_lvl = 0.1) {
 #'
 #' @details
 #'
-#' The approach for determining shapes can be customized by the user with the `plane_shape()` "method" argument. The two methods available are "sdiff" (default) and "dtw".
+#' The approach for determining shapes can be customized by the user with the `plane_shape()` "method" argument. The two methods available are "sdiff" (default) and "dtw". Compared with "sdiff", the "dtw" method has been shown to have a higher sensitivity, lower specificity, and much greater computational cost in some circumstances. The "sdiff" method is recommended if computational efficiency is a concern.
 #'
 #' The "sdiff" method will use consecutive scaled differences to construct shapes. The algorithm operates in three steps:
 #'
@@ -802,8 +805,10 @@ plane_trend <- function(location, input, seed, sig_lvl = 0.1) {
 #' prepped_seed <- plane_seed(prepped_observed, cut_date = "2022-10-29")
 #'
 #' ## run plane component
-#' plane_shape(location = "13", input = prepped_forecast, seed = prepped_seed)
+#' plane_shape(location = "37", input = prepped_forecast, seed = prepped_seed)
 #'
+#' ## run plane component with DTW method
+#' plane_shape(location = "37", input = prepped_forecast, seed = prepped_seed, method = "dtw")
 #'
 plane_shape <- function(location, input, seed, method = "sdiff") {
 

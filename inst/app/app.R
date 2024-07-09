@@ -60,7 +60,7 @@ ui <- navbarPage(title = "rplanes Explorer",
                                                                                                numericInput("tol", label = "Tolerance (Repeat)", value = 0, min = 0, max = 50, step = 1),
                                                                                                numericInput("pre", label = "Prepend Values (Repeat)",  value = 0, min = 0, max = 365, step = 1))),
                                                                            shinyjs::hidden(div(id = "args_shape",
-                                                                                               radioButtons("method", label = "Method (Shape)", choices = c("Default" = "sdiff", "Dynamic Time Warping" = "dtw"), selected = "sdiff")))
+                                                                                               radioButtons("method", label = "Method (Shape)", choices = c("sdiff (Default)" = "sdiff", "Dynamic Time Warping" = "dtw"), selected = "sdiff")))
                                                        )),
                                                        actionBttn("run", "Analyze", style = "unite", color = "danger"),
                                                        actionBttn("reset", "Reset", style = "stretch", color = "warning")

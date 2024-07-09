@@ -25,7 +25,7 @@ A \code{list} with the following values:
 This function identifies the shape of the trajectory for a forecasted signal to compare against existing shapes in seed data. If the shape is identified as novel, a flag is raised, and the signal is considered implausible. See the Details section for further information.
 }
 \details{
-The approach for determining shapes can be customized by the user with the \code{plane_shape()} "method" argument. The two methods available are "sdiff" (default) and "dtw".
+The approach for determining shapes can be customized by the user with the \code{plane_shape()} "method" argument. The two methods available are "sdiff" (default) and "dtw". Compared with "sdiff", the "dtw" method has been shown to have a higher sensitivity, lower specificity, and much greater computational cost in some circumstances. The "sdiff" method is recommended if computational efficiency is a concern.
 
 The "sdiff" method will use consecutive scaled differences to construct shapes. The algorithm operates in three steps:
 \enumerate{
@@ -68,8 +68,10 @@ prepped_forecast <- read_forecast(system.file("extdata/forecast/2022-10-31-SigSc
 prepped_seed <- plane_seed(prepped_observed, cut_date = "2022-10-29")
 
 ## run plane component
-plane_shape(location = "13", input = prepped_forecast, seed = prepped_seed)
+plane_shape(location = "37", input = prepped_forecast, seed = prepped_seed)
 
+## run plane component with DTW method
+plane_shape(location = "37", input = prepped_forecast, seed = prepped_seed, method = "dtw")
 
 }
 \references{
