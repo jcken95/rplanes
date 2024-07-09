@@ -426,7 +426,10 @@ plane_repeat <- function(location, input, seed, tolerance = NULL, prepend = NULL
 #' plane_score(input = prepped_forecast, seed = prepped_seed, components = c("cover","taper"))
 #'
 #' ## run plane scoring with all components and additional args
-#' comp_args <- list("trend" = list("sig_lvl" = 0.05), "repeat" = list("prepend" = 4, "tolerance" = 8), "shape" = list("method" = "dtw"))
+#' trend_args <- list("sig_lvl" = 0.05)
+#' repeat_args <- list("prepend" = 4, "tolerance" = 8)
+#' shape_args <- list("method" = "dtw")
+#' comp_args <- list("trend" = trend_args, "repeat" = repeat_args, "shape" = shape_args)
 #' plane_score(input = prepped_forecast, seed = prepped_seed, args = comp_args)
 #'
 #' ## run plane scoring with specific components and weights
