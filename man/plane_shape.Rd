@@ -25,7 +25,7 @@ A \code{list} with the following values:
 This function identifies the shape of the trajectory for a forecasted signal to compare against existing shapes in seed data. If the shape is identified as novel, a flag is raised, and the signal is considered implausible. See the Details section for further information.
 }
 \details{
-The approach for determining shapes can be customized by the user with the \code{plane_shape()} "method" argument. The two methods available are "sdiff" (default) and "dtw".
+The approach for determining shapes can be customized by the user with the \code{plane_shape()} "method" argument. The two methods available are "sdiff" (default) and "dtw". Compared with "sdiff", the "dtw" method has been shown to have a higher sensitivity, lower specificity, and much greater computational cost in some circumstances. The "sdiff" method is recommended if computational efficiency is a concern.
 
 The "sdiff" method will use consecutive scaled differences to construct shapes. The algorithm operates in three steps:
 \enumerate{

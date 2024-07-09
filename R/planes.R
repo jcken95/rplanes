@@ -751,7 +751,7 @@ plane_trend <- function(location, input, seed, sig_lvl = 0.1) {
 #'
 #' @details
 #'
-#' The approach for determining shapes can be customized by the user with the `plane_shape()` "method" argument. The two methods available are "sdiff" (default) and "dtw".
+#' The approach for determining shapes can be customized by the user with the `plane_shape()` "method" argument. The two methods available are "sdiff" (default) and "dtw". Compared with "sdiff", the "dtw" method has been shown to have a higher sensitivity, lower specificity, and much greater computational cost in some circumstances. The "sdiff" method is recommended if computational efficiency is a concern.
 #'
 #' The "sdiff" method will use consecutive scaled differences to construct shapes. The algorithm operates in three steps:
 #'
