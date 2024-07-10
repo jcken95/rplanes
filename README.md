@@ -8,12 +8,9 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/signaturescience/rplanes/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/signaturescience/rplanes/actions/workflows/R-CMD-check.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/rplanes)](https://CRAN.R-project.org/package=rplanes)
 <!-- badges: end -->
-
-> **DEVELOPMENT STATUS**: The `rplanes` package is being actively
-> developed. As of v0.0.2 the package is under alpha release. Users
-> should be aware that there may be significant changes to the API in
-> this phase.
 
 ## Introduction
 
@@ -25,6 +22,14 @@ are agnostic to geographic and time resolutions and are calculated
 independently and then presented as a combined score.
 
 ## Installation
+
+The package is available to install from CRAN:
+
+``` r
+install.packages("rplanes")
+```
+
+Alternatively you can install the package from GitHub:
 
 ``` r
 #install.packages("remotes")
