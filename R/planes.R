@@ -585,7 +585,7 @@ plane_score <- function(input, seed, components = "all", args = NULL, weights = 
 #'
 #' This function uses [e.divisive()][ecp::e.divisive()], which implements a hierarchical divisive algorithm to identify change points based on distances between segments (calculated using equations 3 and 5 in Matteson and James, 2014; the larger the distance, the more likely a change point). Then a permutation test is used to calculate an approximate p-value.
 #'
-#' Within e.divisive(), we use diff(x) instead of x (the raw data). This is a preference and slightly changes the way that change points are identified. When we use diff(x), the index aligns with the gap between points rather than the points themselves. Instead of identifying a change point based on the change in size between two points, it identifies change points based on the change in the change itself. For example, the dataframe below shows an example of x and diff(x):
+#' The input to `e.divisive()` is transformed using differencing (i.e., `diff(x)` instead of the raw data, `x`). This slightly changes the way that change points are identified, as the index aligns with the gap between points rather than the points themselves. Instead of identifying a change point based on the change in size between two points, it identifies change points based on the change in the change itself. The dataframe below illustrates the difference between `x` and `diff(x)`:
 #'
 #' |**Index**|**x**| **diff(x)**|
 #' | - |:--:| --:|
@@ -597,9 +597,9 @@ plane_score <- function(input, seed, components = "all", args = NULL, weights = 
 #' | 6 | 75 |  0 |
 #' | 7 | 75 |  0 |
 #'
-#' Given this data, e.divisive(x) would identify index #5 (74) as the change point, because there was a jump of +37 between index 4 and 5. But e.divisive(diff(x)) would pick both index #3 (28) and #5 (1), because there was a jump of +28 from index 2 and 3, and there was a jump of -36 between index # 4 and 5. Ultimately, either way detects change points, but in this application (forecasting), diff(ex) is more discerning and less likely to identify change points haphazardly.
+#' Given this data, `e.divisive(x)` would identify index 5 (74) as the change point, because there was a jump of +37 between index 4 and 5. But `e.divisive(diff(x))` would pick both index 3 (28) and 5 (1), because there was a jump of +28 from index 2 and 3, and there was a jump of -36 between index 4 and 5.
 #'
-#' Further, we specify min.size = 2, which means that we are forcing a gap of at least 2 points between detecting change points. In a roundabout way, this increases the significance level or at least decreases the number of change points identified. Should we decide to change the function so that we're not using diff(x), it probably makes sense to change min.size to 3.
+#' Internally, the trend function uses an extra argument to `e.divisive()` for `min.size = 2`, which requires a gap of at least 2 points between detecting change points. This can indirectly increase the significance level or decrease the number of change points identified.
 #'
 #' @references
 #'
