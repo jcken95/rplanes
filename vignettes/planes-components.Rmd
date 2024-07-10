@@ -801,7 +801,7 @@ ggplot(data = trend_dat, mapping = aes(x = date, y = flu.admits)) +
 
 The shape component evaluates the shape of the trajectory of the forecast signal and compares that shape to existing shapes in the observed seed data. If the shape is identified as novel, a flag is raised, and the signal is considered implausible. 
 
-This component has one additional argument that defines the method used to identify shapes - one of "sdiff" (default) or "dtw." Based on preliminary analyses, the DTW method has a higher sensitivity and a slightly lower specificity than the "sdiff" method but is much more computationally expensive.
+This component has one additional argument that defines the method used to identify shapes - one of "sdiff" (scaled difference; set as default) or "dtw" (Dynamic Time Warping). Based on preliminary analyses, the "dtw" method has a higher sensitivity and a slightly lower specificity than the "sdiff" method but is much more computationally expensive.
 
 For more information on the shape algorithm, see `?plane_shape()`.
 
