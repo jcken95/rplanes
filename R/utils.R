@@ -500,8 +500,6 @@ cutter <- function(x, threshold = 1) {
 to_chunk <- function(x, size) {
 
   ## establish the beginning and end indices for the chunks
-  ## TODO: dont hardcode the 3 here ... should be by = 1 ?
-  # ind1 <- seq(1, length(x), by = size - 3)
   ind1 <- seq(1, length(x), by = 1)
   ind2 <- ind1 + (size - 1)
   ## the last of the end indices cant be greater than length of input vector
