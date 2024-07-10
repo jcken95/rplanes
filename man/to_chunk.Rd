@@ -7,7 +7,7 @@
 to_chunk(x, size)
 }
 \arguments{
-\item{x}{Vector to be split into chunks as large as teh "size" specified}
+\item{x}{Vector to be split into chunks as large as the "size" specified}
 
 \item{size}{Width of the chunks for "x" vector}
 }

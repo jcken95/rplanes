@@ -492,7 +492,7 @@ cutter <- function(x, threshold = 1) {
 #'
 #' This unexported helper function creates a list with contents of a vector spit into chunks. The user can specify how large each chunk should be with the "size" argument.
 #'
-#' @param x Vector to be split into chunks as large as teh "size" specified
+#' @param x Vector to be split into chunks as large as the "size" specified
 #' @param size Width of the chunks for "x" vector
 #'
 #' @return A list with as many elements as the number of chunks created. Each element will include vector with a length equal to the "size" specified.
