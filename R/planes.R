@@ -757,22 +757,19 @@ plane_trend <- function(location, input, seed, sig_lvl = 0.1) {
 #'
 #' 1. The prepared [seed][plane_seed()] data is combined with forecasted point estimates and each point-to-point difference is calculated.
 #'
-#' 2. The differences are centered and scaled, then cut into categories. Differences greater than or equal to 1 standard deviation above the mean of differences are considered an "increase". Differences less than or equal to 1 standard deviation below  the mean of differences are considered a "decrease". All other differences are considered "stable".
+#' 2. The differences are centered and scaled, then cut into categories. Differences greater than or equal to one standard deviation above the mean of differences are considered an "increase". Differences less than or equal to one standard deviation below  the mean of differences are considered a "decrease". All other differences are considered "stable".
 #'
 #' 3. The categorical differences are then combined into windows of equal size to the forecasted horizon. Collectively these combined categorical differences create a "shape" (e.g., "increase;stable;stable;decrease").
 #'
-#' 4. Lastly, the algorithm compares the shape for the forecast to all of the shapes observed. If the shape assessed has not been observed in the time series before then a flag is raised and the indicator returned is `TRUE`.
+#' 4. Lastly, the algorithm compares the shape for the forecast to all of the shapes observed. If the shape assessed has not been previously observed in the time series then a flag is raised and the indicator returned is `TRUE`.
 #'
 #' The "dtw" method uses a Dynamic Time Warping (DTW) algorithm to identify shapes within the seed data and then compares the shape of the forecast input signal to the observed shapes. This is done in three broad steps:
 #'
-#' 1. The prepared [seed][plane_seed()] data is divided into a set of sliding windows with a step size of one, each representing a section of the overall time series. The length of these windows is determined by the horizon length of the input data signal (e.g., 2 weeks). If your seed data was a vector, `c(1, 2, 3, 4, 5)`, and your horizon length was 2, then the sliding windows for your observed seed data would be: `c(1, 2)`, `c(2, 3)`, `c(3, 4)`, and `c(4, 5)`. Each sliding window is a subset of the total trajectory shape of the observed data.
+#' 1. The prepared [seed][plane_seed()] data is divided into a set of sliding windows with a step size of one, each representing a section of the overall time series. The length of these windows is determined by the horizon length of the input data signal (e.g., 2 weeks). For example, if the seed data was a vector, `c(1, 2, 3, 4, 5)`, and the horizon length was 2, then the sliding windows for the observed seed data would be: `c(1, 2)`, `c(2, 3)`, `c(3, 4)`, and `c(4, 5)`. Each sliding window is a subset of the total trajectory shape of the observed data.
 #'
-#' 2. Shape-based DTW distances are calculated for every 1x1 combination of the observed sliding windows and are stored in a distance matrix. We use these distances to calibrate our function for identifying outlying shapes in forecast data.
+#' 2. Shape-based DTW distances are calculated for every 1x1 combination of the observed sliding windows and are stored in a distance matrix. These distances calibrate the function for identifying outlying shapes in forecast data. The algorithm finds the minimum distances for each windowed time series to use as a baseline for "observed distances" between chunks of the larger observed time series. The maximum of those minimum distances across the observed time series is set as the threshold. If the minimum of the forecast:observed distance matrix is greater than the threshold, then the forecast is inferred to be unfamiliar (i.e., a novel shape).
 #'
-#'     - We find the minimum distances for each windowed time series to use as a baseline for "observed distances" between chunks of the larger observed time series.
-#'     - We then calculate the maximum of those minimum distance across the observed time series. This will be our **threshold**. If the minimum of the forecast:observed distance matrix is greater than the greatest minimum observed:observed distance, then we can infer that the forecast is unfamiliar (i.e., a novel shape).
-#'
-#' 3. We calculate the shape-based DTW distances between the forecast signal (including the point estimate, lower, and upper bounds) and every observed sliding window. If the distance between the forecast and *any* observed sliding window is less than or equal to our threshold defined above, then this shape is not novel and no flag is raised (**indicator** = `FALSE`).
+#' 3. Next, the algorithm calculates the shape-based DTW distances between the forecast signal (including the point estimate, lower, and upper bounds) and every observed sliding window. If the distance between the forecast and any observed sliding window is less than or equal to the threshold defined above, then this shape is not novel and no flag is raised (indicator is `FALSE`).
 #'
 #'
 #' @references
