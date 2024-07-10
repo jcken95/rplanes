@@ -418,12 +418,12 @@ valid_location <- function(location, input, seed) {
 #'
 #' @description
 #'
-#' This unexported helper function is used to identify the shape in the `plane_shape()` function "simple" method.
+#' This unexported helper function is used to identify the shape in the `plane_shape()` function's scaled difference ("sdiff") method.
 #'
 #' @param input_data A data frame containing at least two columns, one of which must be named "value" with the value assessed and another named "dates" with the date for the observed data
 #' @param window_size The number of of categorical differences used to define the shape
 #'
-#' @return A vector with the shapes identified. Each element of the vector will include a shape, which is a cluster of categorical differences (of the same size as the specified "window_size") collapsed with ";" (e.g., c("decrease;stable;stable;stable","stable;stable;stable;increase","stable;stable;increase;increase")).
+#' @return A vector with the shapes identified. Each element of the vector will include a shape, which is a cluster of categorical differences (of the same size as the specified "window_size") collapsed with ";" (e.g., `c("decrease;stable;stable;stable","stable;stable;stable;increase","stable;stable;increase;increase")`).
 #'
 #'
 get_shapes <- function(input_data, window_size) {

@@ -12,8 +12,8 @@ get_shapes(input_data, window_size)
 \item{window_size}{The number of of categorical differences used to define the shape}
 }
 \value{
-A vector with the shapes identified. Each element of the vector will include a shape, which is a cluster of categorical differences (of the same size as the specified "window_size") collapsed with ";" (e.g., c("decrease;stable;stable;stable","stable;stable;stable;increase","stable;stable;increase;increase")).
+A vector with the shapes identified. Each element of the vector will include a shape, which is a cluster of categorical differences (of the same size as the specified "window_size") collapsed with ";" (e.g., \code{c("decrease;stable;stable;stable","stable;stable;stable;increase","stable;stable;increase;increase")}).
 }
 \description{
-This unexported helper function is used to identify the shape in the \code{plane_shape()} function "simple" method.
+This unexported helper function is used to identify the shape in the \code{plane_shape()} function's scaled difference ("sdiff") method.
 }
