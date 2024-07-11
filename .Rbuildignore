@@ -11,3 +11,4 @@ scratch_dw.R
 ^pkgdown$
 ^doc$
 ^Meta$
+^cran-comments\.md$
