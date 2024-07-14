@@ -404,7 +404,7 @@ plane_repeat <- function(location, input, seed, tolerance = NULL, prepend = NULL
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' ## read in example observed data and prep observed signal
 #' hosp <- read.csv(system.file("extdata/observed/hdgov_hosp_weekly.csv", package = "rplanes"))
 #'

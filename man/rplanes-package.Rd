@@ -4,11 +4,11 @@
 \name{rplanes-package}
 \alias{rplanes}
 \alias{rplanes-package}
-\title{rplanes: Plausibility Analysis of Epidemiological Signals in 'R'}
+\title{rplanes: Plausibility Analysis of Epidemiological Signals}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-The 'rplanes' package provides functionality to prepare data and analyze plausibility of both forecasted and reported epidemiological signals. The functions implement a set of plausibility algorithms that are agnostic to geographic and time resolutions and are calculated independently then presented as a combined score.
+Provides functionality to prepare data and analyze plausibility of both forecasted and reported epidemiological signals. The functions implement a set of plausibility algorithms that are agnostic to geographic and time resolutions and are calculated independently then presented as a combined score.
 }
 \seealso{
 Useful links:

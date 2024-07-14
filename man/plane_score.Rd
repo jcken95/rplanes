@@ -24,7 +24,7 @@ A \code{list} with scoring results for all locations.
 This function wraps PLANES scoring for specified components across all locations in single step.
 }
 \examples{
-\dontrun{
+\donttest{
 ## read in example observed data and prep observed signal
 hosp <- read.csv(system.file("extdata/observed/hdgov_hosp_weekly.csv", package = "rplanes"))
 
