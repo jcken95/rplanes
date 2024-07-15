@@ -1,4 +1,9 @@
+This is a re-upload of the initial CRAN submission for the package. We have responded to the suggestions from CRAN maintainers:
 
+- We have removed "in R" from the package title.
+- We no longer begin the description field with "this package".
+- We do not have any references to add to the description field.
+- We were previously using "\dontrun" in two examples, one of which demonstrated how to launch a web server with a wrapper function and the other took >45 seconds to execute. We have now switched to using "\donttest" for the long-running example.
 
 ## Test environments
 
