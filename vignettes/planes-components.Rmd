@@ -38,7 +38,7 @@ tibble(
   `Function` = c("plane_diff()","plane_cover()","plane_taper()","plane_repeat()","plane_trend()", "plane_shape()", "plane_zero()"),
   `Forecast` = c("YES","YES","YES","YES","YES", "YES", "YES"),
   `Observed` = c("YES","NO","NO","YES","NO", "NO", "YES"),
-  `Parameters` = c("None","None","None","Tolerated number of repeats; Number of observations to prepend","Significance level for trend change", "None", "None")
+  `Parameters` = c("None","None","None","Tolerated number of repeats; Number of observations to prepend","Significance level for trend change", "Method used to identify unique shapes (sdiff or dtw)", "None")
 ) %>%
   knitr::kable()
 ```
@@ -801,7 +801,7 @@ ggplot(data = trend_dat, mapping = aes(x = date, y = flu.admits)) +
 
 The shape component evaluates the shape of the trajectory of the forecast signal and compares that shape to existing shapes in the observed seed data. If the shape is identified as novel, a flag is raised, and the signal is considered implausible. 
 
-This function uses Dynamic Time Warping (DTW) to identify shapes and flag novel shapes. This function works in three broad steps. First, the prepared seed data is divided into a set of sliding windows, each representing a subset of the total trajectory shape of the observed data. Second, shape-based DTW distances are calculated for every combination of the observed sliding windows, and these distances are used to calibrate a distance threshold that will define whether or not a signal shape is novel. Third, we calculate DTW distances between the forecast signal and each of the observed sliding windows. If any of those distances are less than the defined threshold, the shape is not novel, no flag is raised, and the forecast is considered plausible.
+This component has one additional argument that defines the method used to identify shapes - one of "sdiff" (scaled difference; set as default) or "dtw" (Dynamic Time Warping). Based on preliminary analyses, the "dtw" method has a higher sensitivity and a slightly lower specificity than the "sdiff" method but is much more computationally expensive.
 
 For more information on the shape algorithm, see `?plane_shape()`.
 
@@ -869,7 +869,7 @@ shape_dat %>%
 
 Next we'll look at an example of a forecast with a familiar shape that shouldn't trigger a flag:
 ```{r}
-point_est <- c(35, 18, 30, 20)
+point_est <- c(28, 18, 30, 20)
 
 prepped_forecast <-
   tibble(
@@ -919,8 +919,6 @@ shape_dat %>%
   ylab("Flu hospitalizations") +
   ggtitle("Shape component\nNot Flagged")
 ```
-
-
 
 
 ## Zero - `plane_zero()`

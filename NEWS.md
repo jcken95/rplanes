@@ -1,3 +1,19 @@
+# rplanes 0.1.0
+
+## New features
+
+### Performance optimization for `plane_shape()`
+
+In this release, we have introduced a parameter to customize the "method" used to identify shapes within `plane_shape()`. Previously, the function was only able to use a Dynamic Time Warping ("dtw") algorithm to identify shapes in the time series. This approach involved calculations that were computationally expensive, particularly on datasets with multiple locations in the seed. We have introduced a second method that uses a scaled difference approach ("sdiff") to ascertain shapes. The "sdiff" option is set as the default, as it is much more computationally efficient than the "dtw" option. For more details on both of these methods see `?plane_shape()`.
+
+### Interpretation vignette
+
+The package now includes a narrative vignette that discusses how to interpret results from PLANES analysis. Topics include how to apply the weighting scheme in `plane_score()`, strategies to mitigate limitations that may arise from seed data, and considerations for operationally taking action based on plausibility scores.
+
+### More informative warning for missing data
+
+This release introduces messaging that communicates when a location has fewer time steps compared to others in the seed. The warning message is formatted as "{LOCATION} has fewer values than some or all of the locations. This may introduce issues in downstream plausibility analysis."
+
 # rplanes 0.0.3
 
 ## New features

@@ -404,7 +404,7 @@ plane_repeat <- function(location, input, seed, tolerance = NULL, prepend = NULL
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' ## read in example observed data and prep observed signal
 #' hosp <- read.csv(system.file("extdata/observed/hdgov_hosp_weekly.csv", package = "rplanes"))
 #'
@@ -426,7 +426,10 @@ plane_repeat <- function(location, input, seed, tolerance = NULL, prepend = NULL
 #' plane_score(input = prepped_forecast, seed = prepped_seed, components = c("cover","taper"))
 #'
 #' ## run plane scoring with all components and additional args
-#' comp_args <- list("trend" = list("sig_lvl" = 0.05), "repeat" = list("prepend" = 4, "tolerance" = 8))
+#' trend_args <- list("sig_lvl" = 0.05)
+#' repeat_args <- list("prepend" = 4, "tolerance" = 8)
+#' shape_args <- list("method" = "dtw")
+#' comp_args <- list("trend" = trend_args, "repeat" = repeat_args, "shape" = shape_args)
 #' plane_score(input = prepped_forecast, seed = prepped_seed, args = comp_args)
 #'
 #' ## run plane scoring with specific components and weights
@@ -582,7 +585,7 @@ plane_score <- function(input, seed, components = "all", args = NULL, weights = 
 #'
 #' This function uses [e.divisive()][ecp::e.divisive()], which implements a hierarchical divisive algorithm to identify change points based on distances between segments (calculated using equations 3 and 5 in Matteson and James, 2014; the larger the distance, the more likely a change point). Then a permutation test is used to calculate an approximate p-value.
 #'
-#' Within e.divisive(), we use diff(x) instead of x (the raw data). This is a preference and slightly changes the way that change points are identified. When we use diff(x), the index aligns with the gap between points rather than the points themselves. Instead of identifying a change point based on the change in size between two points, it identifies change points based on the change in the change itself. For example, the dataframe below shows an example of x and diff(x):
+#' The input to `e.divisive()` is transformed using differencing (i.e., `diff(x)` instead of the raw data, `x`). This slightly changes the way that change points are identified, as the index aligns with the gap between points rather than the points themselves. Instead of identifying a change point based on the change in size between two points, it identifies change points based on the change in the change itself. The dataframe below illustrates the difference between `x` and `diff(x)`:
 #'
 #' |**Index**|**x**| **diff(x)**|
 #' | - |:--:| --:|
@@ -594,9 +597,9 @@ plane_score <- function(input, seed, components = "all", args = NULL, weights = 
 #' | 6 | 75 |  0 |
 #' | 7 | 75 |  0 |
 #'
-#' Given this data, e.divisive(x) would identify index #5 (74) as the change point, because there was a jump of +37 between index 4 and 5. But e.divisive(diff(x)) would pick both index #3 (28) and #5 (1), because there was a jump of +28 from index 2 and 3, and there was a jump of -36 between index # 4 and 5. Ultimately, either way detects change points, but in this application (forecasting), diff(ex) is more discerning and less likely to identify change points haphazardly.
+#' Given this data, `e.divisive(x)` would identify index 5 (74) as the change point, because there was a jump of +37 between index 4 and 5. But `e.divisive(diff(x))` would pick both index 3 (28) and 5 (1), because there was a jump of +28 from index 2 and 3, and there was a jump of -36 between index 4 and 5.
 #'
-#' Further, we specify min.size = 2, which means that we are forcing a gap of at least 2 points between detecting change points. In a roundabout way, this increases the significance level or at least decreases the number of change points identified. Should we decide to change the function so that we're not using diff(x), it probably makes sense to change min.size to 3.
+#' Internally, the trend function uses an extra argument to `e.divisive()` for `min.size = 2`, which requires a gap of at least 2 points between detecting change points. This can indirectly increase the significance level or decrease the number of change points identified.
 #'
 #' @references
 #'
@@ -737,6 +740,7 @@ plane_trend <- function(location, input, seed, sig_lvl = 0.1) {
 #' @param location Character vector with location code; the location must appear in input and seed
 #' @param input Input signal data to be scored; object must be one of [forecast][to_signal()]
 #' @param seed Prepared [seed][plane_seed()]
+#' @param method The method for determining shapes; must be one of "sdiff" or "dtw" (see Details); default is "sdiff"
 #'
 #' @return
 #'
@@ -747,16 +751,25 @@ plane_trend <- function(location, input, seed, sig_lvl = 0.1) {
 #'
 #' @details
 #'
-#' This function uses a Dynamic Time Warping (DTW) algorithm to identify shapes within the seed data and then compares the shape of the forecast input signal to the observed shapes. This is done in three broad steps:
+#' The approach for determining shapes can be customized by the user with the `plane_shape()` "method" argument. The two methods available are "sdiff" (default) and "dtw". Compared with "sdiff", the "dtw" method has been shown to have a higher sensitivity, lower specificity, and much greater computational cost in some circumstances. The "sdiff" method is recommended if computational efficiency is a concern.
 #'
-#' 1. The prepared [seed][plane_seed()] data is divided into a set of sliding windows with a step size of one, each representing a section of the overall time series. The length of these windows is determined by the horizon length of the input data signal (e.g., 2 weeks). If your seed data was a vector, `c(1, 2, 3, 4, 5)`, and your horizon length was 2, then the sliding windows for your observed seed data would be: `c(1, 2)`, `c(2, 3)`, `c(3, 4)`, and `c(4, 5)`. Each sliding window is a subset of the total trajectory shape of the observed data.
+#' The "sdiff" method will use consecutive scaled differences to construct shapes. The algorithm operates in three steps:
 #'
-#' 2. Shape-based DTW distances are calculated for every 1x1 combination of the observed sliding windows and are stored in a distance matrix. We use these distances to calibrate our function for identifying outlying shapes in forecast data.
+#' 1. The prepared [seed][plane_seed()] data is combined with forecasted point estimates and each point-to-point difference is calculated.
 #'
-#'     - We find the minimum distances for each windowed time series to use as a baseline for "observed distances" between chunks of the larger observed time series.
-#'     - We then calculate the maximum of those minimum distance across the observed time series. This will be our **threshold**. If the minimum of the forecast:observed distance matrix is greater than the greatest minimum observed:observed distance, then we can infer that the forecast is unfamiliar (i.e., a novel shape).
+#' 2. The differences are centered and scaled, then cut into categories. Differences greater than or equal to one standard deviation above the mean of differences are considered an "increase". Differences less than or equal to one standard deviation below  the mean of differences are considered a "decrease". All other differences are considered "stable".
 #'
-#' 3. We calculate the shape-based DTW distances between the forecast signal (including the point estimate, lower, and upper bounds) and every observed sliding window. If the distance between the forecast and *any* observed sliding window is less than or equal to our threshold defined above, then this shape is not novel and no flag is raised (**indicator** = `FALSE`).
+#' 3. The categorical differences are then combined into windows of equal size to the forecasted horizon. Collectively these combined categorical differences create a "shape" (e.g., "increase;stable;stable;decrease").
+#'
+#' 4. Lastly, the algorithm compares the shape for the forecast to all of the shapes observed. If the shape assessed has not been previously observed in the time series then a flag is raised and the indicator returned is `TRUE`.
+#'
+#' The "dtw" method uses a Dynamic Time Warping (DTW) algorithm to identify shapes within the seed data and then compares the shape of the forecast input signal to the observed shapes. This is done in three broad steps:
+#'
+#' 1. The prepared [seed][plane_seed()] data is divided into a set of sliding windows with a step size of one, each representing a section of the overall time series. The length of these windows is determined by the horizon length of the input data signal (e.g., 2 weeks). For example, if the seed data was a vector, `c(1, 2, 3, 4, 5)`, and the horizon length was 2, then the sliding windows for the observed seed data would be: `c(1, 2)`, `c(2, 3)`, `c(3, 4)`, and `c(4, 5)`. Each sliding window is a subset of the total trajectory shape of the observed data.
+#'
+#' 2. Shape-based DTW distances are calculated for every 1x1 combination of the observed sliding windows and are stored in a distance matrix. These distances calibrate the function for identifying outlying shapes in forecast data. The algorithm finds the minimum distances for each windowed time series to use as a baseline for "observed distances" between chunks of the larger observed time series. The maximum of those minimum distances across the observed time series is set as the threshold. If the minimum of the forecast:observed distance matrix is greater than the threshold, then the forecast is inferred to be unfamiliar (i.e., a novel shape).
+#'
+#' 3. Next, the algorithm calculates the shape-based DTW distances between the forecast signal (including the point estimate, lower, and upper bounds) and every observed sliding window. If the distance between the forecast and any observed sliding window is less than or equal to the threshold defined above, then this shape is not novel and no flag is raised (indicator is `FALSE`).
 #'
 #'
 #' @references
@@ -789,14 +802,12 @@ plane_trend <- function(location, input, seed, sig_lvl = 0.1) {
 #' prepped_seed <- plane_seed(prepped_observed, cut_date = "2022-10-29")
 #'
 #' ## run plane component
-#' ## this location is an example of where we expect a flag to be raised
-#' plane_shape(location = "13", input = prepped_forecast, seed = prepped_seed)
+#' plane_shape(location = "37", input = prepped_forecast, seed = prepped_seed)
 #'
-#' ## this location is an example of where we do not expect a flag to be raised
-#' plane_shape(location = "06", input = prepped_forecast, seed = prepped_seed)
+#' ## run plane component with DTW method
+#' plane_shape(location = "37", input = prepped_forecast, seed = prepped_seed, method = "dtw")
 #'
-#'
-plane_shape <- function(location, input, seed) {
+plane_shape <- function(location, input, seed, method = "sdiff") {
 
   ## double check that location is in seed and input before proceeding
   valid_location(location, input, seed)
@@ -844,51 +855,71 @@ plane_shape <- function(location, input, seed) {
   # Set the window size and step size
   window_size <- input[["horizon"]]  # Adjust this based on your desired window size (horizon_length)
 
-  # Create sliding windows and return a data frame
-  obs_traj <- create_sliding_windows_df(obspoint, window_size)
+  if(method == "sdiff") {
 
-  # Calculate all distances in distance matrix:
-  distmat <- dtw::dtwDist(obs_traj)
-  diag(distmat) <- NA
+    ## set up input data using the observed points and forecasted point estimates
+    input_data <- dplyr::tibble(value = c(obspoint, forepoint), date = dates)
 
-  # Find minimum distances for each time series to use as a baseline for "observed distances" between chunks of the larger observed time series:
-  mins <- apply(distmat, 1, FUN = min, na.rm = TRUE)
+    ## run the get_shapes helper to get a vector of all shapes identified
+    all_shapes <- get_shapes(input_data, window_size)
 
-  # Find the maximum, minimum distance across the observed time series. This will be our threshold. If the minimum of the forecast:observed distance matrix is less than or equal to the greatest, minimum observed distance, than we can infer that the forecast is not a novel shape
-  threshold <- max(mins)
+    ## pull out the last shape ... which will be the forecasted shape given the setup for window size above
+    eval_shape <- tail(all_shapes,1)
+
+    ## check if the evaluated shape appears in the vector of all shapes
+    ## make sure that the last shape (the evaluated shape) is excluded
+    novel_shape <- !(eval_shape %in% all_shapes[-length(all_shapes)])
+
+  } else if (method == "dtw") {
+
+    # Create sliding windows and return a data frame
+    obs_traj <- create_sliding_windows_df(obspoint, window_size)
+
+    # Calculate all distances in distance matrix:
+    distmat <- dtw::dtwDist(obs_traj)
+    diag(distmat) <- NA
+
+    # Find minimum distances for each time series to use as a baseline for "observed distances" between chunks of the larger observed time series:
+    mins <- apply(distmat, 1, FUN = min, na.rm = TRUE)
+
+    # Find the maximum, minimum distance across the observed time series. This will be our threshold. If the minimum of the forecast:observed distance matrix is less than or equal to the greatest, minimum observed distance, than we can infer that the forecast is not a novel shape
+    threshold <- max(mins)
 
 
-  ############################################################
-  # Calculate forecast distances and flag any forecast that has an unusually high distance:
+    ############################################################
+    # Calculate forecast distances and flag any forecast that has an unusually high distance:
 
-  ## split the observed windows matrix from above into a list
-  list_obs_traj <-
-    obs_traj %>%
-    dplyr::mutate(index = 1:dplyr::n()) %>%
-    dplyr::group_split(.data$index) %>%
-    purrr::map(., ~dplyr::select(.x, -.data$index) %>% unlist(., use.names = FALSE))
+    ## split the observed windows matrix from above into a list
+    list_obs_traj <-
+      obs_traj %>%
+      dplyr::mutate(index = 1:dplyr::n()) %>%
+      dplyr::group_split(.data$index) %>%
+      purrr::map(., ~dplyr::select(.x, -.data$index) %>% unlist(., use.names = FALSE))
 
-  ## split the forecast components ...
-  ## ... the lower bound, point estimate, upper bound ...
-  ## ... into a list
-  forc_list <- list(lower = forecast$lower,
-                    point = forecast$point,
-                    upper = forecast$upper)
+    ## split the forecast components ...
+    ## ... the lower bound, point estimate, upper bound ...
+    ## ... into a list
+    forc_list <- list(lower = forecast$lower,
+                      point = forecast$point,
+                      upper = forecast$upper)
 
-  ## create all combinations of elements from these two lists
-  to_map <- tidyr::crossing(obs = list_obs_traj, forc = forc_list)
+    ## create all combinations of elements from these two lists
+    to_map <- tidyr::crossing(obs = list_obs_traj, forc = forc_list)
 
-  ## iterate over the combinations and compute distances
-  ## NOTE: need to get the first element to get the vectors stored in the list
-  dtw_distances <- purrr::map2_dbl(to_map$forc, to_map$obs, ~dtw::dtw(.x,.y)$distance)
+    ## iterate over the combinations and compute distances
+    ## NOTE: need to get the first element to get the vectors stored in the list
+    dtw_distances <- purrr::map2_dbl(to_map$forc, to_map$obs, ~dtw::dtw(.x,.y)$distance)
 
-  ## check to see if each distance is <= the defined threshold
-  novel_shape_check <- purrr::map_lgl(dtw_distances, function(x) ifelse(x<= threshold, FALSE, TRUE))
+    ## check to see if each distance is <= the defined threshold
+    novel_shape_check <- purrr::map_lgl(dtw_distances, function(x) ifelse(x<= threshold, FALSE, TRUE))
 
-  ## are any of the distances checked <= than the threshold?
-  ## if so this will return TRUE and a flag should be raised
-  ## if any of the shape check results are FALSE then this will return FALSE (no flag)
-  novel_shape <- all(novel_shape_check)
+    ## are any of the distances checked <= than the threshold?
+    ## if so this will return TRUE and a flag should be raised
+    ## if any of the shape check results are FALSE then this will return FALSE (no flag)
+    novel_shape <- all(novel_shape_check)
+
+  }
+
 
   return(list(indicator = novel_shape))
 
